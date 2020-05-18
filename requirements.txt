@@ -1,0 +1,6 @@
+geopy==1.22.0
+aiogram==2.6.1
+requests==2.23.0
+python-dotenv==0.12.0
+python-slugify==4.0.0
+python-telegram-bot==12.4.2

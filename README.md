@@ -24,6 +24,7 @@ pip install -r requirements.txt
 5. To work with Telegram you need:
     * Enable `VPN` if the messenger is blocked in your country;
     * Get `bot token` and put it in `.env` under the name `TG_BOT_TOKEN`, more about that [here](https://core.telegram.org/bots#6-botfather);
+    * Get `payment token` for bot from `@botfather` and put it in `.env` under name `TG_BOT_PAYMENT_TOKEN`
     * Get `bot token` for the bot logger required to track bot errors. Put it in `.env` under the name `TG_LOG_BOT_TOKEN`.
     * Get `bot token` for deliveryman bot. Put it in `.env` under the name `TG_DELIVERY_BOT_TOKEN`.
     * Get your `id` from `@userinfobot` and put in `.env` as `TG_CHAT_ID`

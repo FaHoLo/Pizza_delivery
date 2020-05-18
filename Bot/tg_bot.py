@@ -1,13 +1,11 @@
 import os
 import db_aps
 import logging
-import requests
 import log_config
 import moltin_aps
 from asyncio import sleep
 from textwrap import dedent
 from dotenv import load_dotenv
-from geopy.distance import distance
 
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -242,7 +240,7 @@ async def handle_address(message: types.Message):
     
     if message.text:
         apikey = os.environ['GEOCODER_KEY']
-        lat, lon = fetch_coordinates(apikey, message.text)
+        lat, lon = db_aps.fetch_coordinates(apikey, message.text)
     elif message.location:
         lat = message.location.latitude
         lon = message.location.longitude
@@ -261,20 +259,8 @@ async def handle_address(message: types.Message):
         return 'WAITING_ADDRESS'
     return 'WAITING_DELIVERY_CHOOSE'
 
-def fetch_coordinates(apikey, place):
-    base_url = 'https://geocode-maps.yandex.ru/1.x'
-    params = {'geocode': place, 'apikey': apikey, 'format': 'json'}
-    response = requests.get(base_url, params=params)
-    response.raise_for_status()
-    places_found = response.json()['response']['GeoObjectCollection']['featureMember']
-    if not places_found:
-        return None, None
-    most_relevant = places_found[0]
-    lon, lat = most_relevant['GeoObject']['Point']['pos'].split(' ')
-    return float(lat), float(lon)
-
 def get_answer_by_customer_coords(customer_coords):
-    nearest_pizzeria = get_nearest_pizzeria(customer_coords)
+    nearest_pizzeria = db_aps.get_nearest_pizzeria(customer_coords)
     customer_is_close = True
     delivery_price = 0
     if nearest_pizzeria['distance'] <= 0.5:
@@ -298,16 +284,6 @@ def get_answer_by_customer_coords(customer_coords):
         customer_is_close = False
     return answer, customer_is_close, nearest_pizzeria['id'], delivery_price
 
-def get_nearest_pizzeria(customer_coords):
-    pizzerias = moltin_aps.get_all_entries('pizzeria')
-    for pizzeria in pizzerias:
-        pizzeria_coords = (pizzeria['latitude'], pizzeria['longitude'])
-        pizzeria['distance'] = distance(customer_coords, pizzeria_coords).kilometers
-    nearest_pizzeria = min(pizzerias, key=get_pizzeria_distance)
-    return nearest_pizzeria
-
-def get_pizzeria_distance(pizzeria):
-    return pizzeria['distance']
 
 def collect_address_keyboard(coords_id, nearest_pizzeria_id, delivery_allowed, delivery_price):
     keyboard = InlineKeyboardMarkup(row_width=1)
@@ -327,7 +303,7 @@ async def handle_delivery_choose(callback_query: types.CallbackQuery):
         coords_id, delivery_price = callback_query.data.split(',')[1:3]
         coords = moltin_aps.get_entry('customer-address', coords_id)
         coords = (coords['latitude'], coords['longitude'])
-        pizzeria_id = get_nearest_pizzeria(coords)['id']
+        pizzeria_id = db_aps.get_nearest_pizzeria(coords)['id']
         deliveryman_id = moltin_aps.get_entry('pizzeria', pizzeria_id)['deliveryman-tg-id']
         customer_cart_name = f'tg-{callback_query.message.chat.id}'
         await notify_deliveryman(deliveryman_id, customer_cart_name, delivery_price, coords[0], coords[1])

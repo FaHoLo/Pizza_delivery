@@ -2,8 +2,6 @@
 
 The project was created for sales and delivery via telegram bot with CMS [Moltin](https://www.moltin.com/).
 
-[Russian doc](https://github.com/FaHoLo/Pizza_delivery/blob/master/READMEru.md)
-
 ### Bot in work
 
 ![Tg example](shop_example.gif)

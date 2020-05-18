@@ -2,6 +2,8 @@
 
 The project was created for sales and delivery via telegram bot with CMS [Moltin](https://www.moltin.com/).
 
+Working bot: [@pizza_dzya_bot](tg://resolve?domain=pizza_dzya_bot)
+
 ### Bot in work
 
 ![Tg example](shop_example.gif)

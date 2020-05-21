@@ -34,22 +34,6 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
-# OSX
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# Files that might appear on external disk
-.Spotlight-V100
-.Trashes
-
-# Directories potentially created on remote AFP share
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
-
 # Unit test / coverage reports
 htmlcov/
 .tox/
@@ -78,41 +62,6 @@ instance/
 # Scrapy stuff:
 .scrapy
 
-# PyBuilder
-target/
-
-# pyenv
-.python-version
-
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
-
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
 # Data
 menu.json
 addresses.json
-
-# mkdocs documentation
-/site
-
-# Google creds
-credentials.json
-
-# Examples
-*-ex.*
-*tutorial.*
-
-# VSCode
-.vscode/

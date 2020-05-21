@@ -284,7 +284,6 @@ def get_answer_by_customer_coords(customer_coords):
         customer_is_close = False
     return answer, customer_is_close, nearest_pizzeria['id'], delivery_price
 
-
 def collect_address_keyboard(coords_id, nearest_pizzeria_id, delivery_allowed, delivery_price):
     keyboard = InlineKeyboardMarkup(row_width=1)
     if delivery_allowed:

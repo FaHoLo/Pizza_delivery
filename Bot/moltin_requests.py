@@ -45,8 +45,7 @@ def check_for_token_expired(token_expires):
     request_time_reserve = 10
     token_expires = token_expires - request_time_reserve
     now_time = int(datetime.now().timestamp())
-    if now_time >= token_expires:
-        return True
+    return now_time >= token_expires
 
 def make_post_request(method, method_headers={}, payload=None, files=None):
     headers = collect_authorization_header()

@@ -334,7 +334,7 @@ async def notify_deliveryman(deliveryman_id, customer_cart_name, delivery_price,
 async def notify_delivery_timeout(user_id):
     await sleep(300)
     # TODO check if order already delivered
-    text = dedent(f'''\
+    text = dedent('''\
         Время доставки подошло к концу. Мы вернем вам деньги за ваш заказ. 
         Приятного аппетита!
     ''')

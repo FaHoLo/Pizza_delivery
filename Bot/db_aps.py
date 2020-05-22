@@ -21,6 +21,7 @@ async def get_database_connection():
         db_logger.debug('Got new db connection')
     return _database
 
+
 def fetch_coordinates(apikey, place):
     base_url = 'https://geocode-maps.yandex.ru/1.x'
     params = {'geocode': place, 'apikey': apikey, 'format': 'json'}
@@ -33,6 +34,7 @@ def fetch_coordinates(apikey, place):
     lon, lat = most_relevant['GeoObject']['Point']['pos'].split(' ')
     return float(lat), float(lon)
 
+
 def get_nearest_pizzeria(customer_coords):
     pizzerias = moltin_aps.get_all_entries('pizzeria')
     for pizzeria in pizzerias:
@@ -41,8 +43,10 @@ def get_nearest_pizzeria(customer_coords):
     nearest_pizzeria = min(pizzerias, key=get_pizzeria_distance)
     return nearest_pizzeria
 
+
 def get_pizzeria_distance(pizzeria):
     return pizzeria['distance']
+
 
 async def get_moltin_customer_id(customer_key):
     db = await get_database_connection()
@@ -52,11 +56,13 @@ async def get_moltin_customer_id(customer_key):
     db_logger.debug(f'Got moltin customer id «{customer_id}» from db')
     return customer_id
 
+
 async def update_customer_info(customer_key, customer_info):
     db = await get_database_connection()
     customer_id = db.get(customer_key).decode('utf-8')
     moltin_aps.update_customer_info(customer_id, customer_info)
     db_logger.debug(f'Customer «{customer_id}» info was updated')
+
 
 async def create_customer(customer_key, customer_info):
     db = await get_database_connection()

@@ -30,19 +30,23 @@ def main():
     )
     executor.start_polling(dp)
 
+
 @dp.errors_handler()
 async def handle_errors(update, exception):
     tg_logger.exception('')
     return True
 
+
 @dp.callback_query_handler(lambda callback_query: True)
 async def handle_callback_query(callback_query: types.CallbackQuery):
     await handle_user_reply(callback_query)
+
 
 @dp.pre_checkout_query_handler(lambda query: True)
 async def process_pre_checkout_query(pre_checkout_query: types.PreCheckoutQuery):
     error_message = 'Технические неполадки на сервере оплаты :-( Попробуйте через пару минут'
     await bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True, error_message=error_message)
+
 
 @dp.message_handler(content_types=types.ContentType.SUCCESSFUL_PAYMENT)
 async def process_successful_payment(message: types.Message):
@@ -52,9 +56,11 @@ async def process_successful_payment(message: types.Message):
     # TODO save payment status to moltin
     await bot.send_message(message.chat.id, text, parse_mode=types.ParseMode.MARKDOWN_V2)
 
+
 @dp.message_handler(content_types=types.ContentTypes.ANY)
 async def handle_message(update):
     await handle_user_reply(update)
+
 
 async def handle_user_reply(update):
     db = await db_aps.get_database_connection()
@@ -75,6 +81,7 @@ async def handle_user_reply(update):
     db.set(chat_id, next_state)
     tg_logger.debug(f'User «{chat_id}» state changed to {next_state}')
 
+
 async def handle_update(update):
     if type(update) == types.Message:
         chat_id = f'tg-{update.chat.id}'
@@ -83,6 +90,7 @@ async def handle_update(update):
         chat_id = f'tg-{update.message.chat.id}'
         user_reply = update.data
     return chat_id, user_reply
+
 
 async def get_user_state(chat_id, user_reply, db):
     if user_reply == '/start':
@@ -94,19 +102,22 @@ async def get_user_state(chat_id, user_reply, db):
         user_state = db.get(chat_id).decode('utf-8')
     return user_state
 
+
 async def handle_start(message: types.Message):
     await send_menu(message, 0)
     return 'HANDLE_MENU'
+
 
 async def send_menu(message: types.Message, page_number):
     keyboard = await collect_menu_keyboard(page_number)
     await message.answer('Выберите товар:', reply_markup=keyboard)
     tg_logger.debug(f'Menu was sent to {message.chat.id}')
 
+
 async def collect_menu_keyboard(page_number):
     prod_on_page = 8
     first_product_num = page_number * prod_on_page
-    last_product_num =  first_product_num + prod_on_page
+    last_product_num = first_product_num + prod_on_page
     products = moltin_aps.get_all_products()
 
     keyboard = InlineKeyboardMarkup(row_width=2)
@@ -120,8 +131,9 @@ async def collect_menu_keyboard(page_number):
     if last_product_num < len(products) and page_number == 0:
         keyboard.add(InlineKeyboardButton('След. стр. →', callback_data=f'pagination,{page_number+1}'))
     keyboard.add(CART_BUTTON)
-    tg_logger.debug(f'Menu keyboard was collected')
+    tg_logger.debug('Menu keyboard was collected')
     return keyboard
+
 
 async def handle_menu(callback_query: types.CallbackQuery):
     if callback_query.data == 'cart':
@@ -152,6 +164,7 @@ async def handle_menu(callback_query: types.CallbackQuery):
     return 'HANDLE_DESCRIPTION'
     tg_logger.debug(f'{product_name} description was sent')
 
+
 async def send_cart(callback_query):
     keyboard = InlineKeyboardMarkup(row_width=2).add(MENU_BUTTON)
     cart_name = f'tg-{callback_query.message.chat.id}'
@@ -167,6 +180,7 @@ async def send_cart(callback_query):
     await bot.send_message(chat_id, text, reply_markup=keyboard)
     tg_logger.debug(f'Cart was sent to {chat_id}')
 
+
 async def collect_full_cart(cart_items, cart_name, keyboard):
     text = 'Товары в вашей корзине:\n\n'
     total_price = moltin_aps.get_cart(cart_name)['meta']['display_price']['with_tax']['formatted']
@@ -181,8 +195,9 @@ async def collect_full_cart(cart_items, cart_name, keyboard):
         ''')
         keyboard.add(InlineKeyboardButton(f'Убрать {product_name}', callback_data=item_id))
     text += f'Всего: {total_price}'
-    tg_logger.debug(f'Cart was collected')
+    tg_logger.debug('Cart was collected')
     return text, keyboard
+
 
 async def delete_bot_message(update):
     if type(update) == types.Message:
@@ -191,6 +206,7 @@ async def delete_bot_message(update):
         await bot.delete_message(update.message.chat.id, update.message.message_id)
     tg_logger.debug('Previous bot message was deleted')
 
+
 async def collect_product_description_keyboard(product_id):
     keyboard = InlineKeyboardMarkup()
     keyboard.add(
@@ -198,8 +214,9 @@ async def collect_product_description_keyboard(product_id):
     )
     keyboard.add(MENU_BUTTON)
     keyboard.insert(CART_BUTTON)
-    tg_logger.debug(f'Description keyboard was collected')
+    tg_logger.debug('Description keyboard was collected')
     return keyboard
+
 
 async def handle_description(callback_query: types.CallbackQuery):
     if callback_query.data == 'menu':
@@ -216,6 +233,7 @@ async def handle_description(callback_query: types.CallbackQuery):
         await callback_query.answer(f'{number_of_kilos} шт. добавлено в корзину')
         return 'HANDLE_DESCRIPTION'
 
+
 async def handle_cart(callback_query: types.CallbackQuery):
     if callback_query.data == 'menu':
         await send_menu(callback_query.message, 0)
@@ -225,7 +243,7 @@ async def handle_cart(callback_query: types.CallbackQuery):
         text = 'Отправьте нам свой адрес или геолокацию'
         await callback_query.answer(text)
         await bot.send_message(callback_query.message.chat.id, text)
-        tg_logger.debug(f'Start payment conversation')
+        tg_logger.debug('Start payment conversation')
         return 'WAITING_ADDRESS'
     else:
         moltin_aps.remove_item_from_cart(f'tg-{callback_query.message.chat.id}', callback_query.data)
@@ -233,11 +251,12 @@ async def handle_cart(callback_query: types.CallbackQuery):
         await delete_bot_message(callback_query)
     return 'HANDLE_CART'
 
+
 async def handle_address(message: types.Message):
     answer = 'Не могу распознать этот адресс, попробуйте ещё раз.'
     lat = lon = address_keyboard = None
     delivery_allowed = False
-    
+
     if message.text:
         apikey = os.environ['GEOCODER_KEY']
         lat, lon = db_aps.fetch_coordinates(apikey, message.text)
@@ -258,6 +277,7 @@ async def handle_address(message: types.Message):
     if not delivery_allowed:
         return 'WAITING_ADDRESS'
     return 'WAITING_DELIVERY_CHOOSE'
+
 
 def get_answer_by_customer_coords(customer_coords):
     nearest_pizzeria = db_aps.get_nearest_pizzeria(customer_coords)
@@ -284,12 +304,14 @@ def get_answer_by_customer_coords(customer_coords):
         customer_is_close = False
     return answer, customer_is_close, nearest_pizzeria['id'], delivery_price
 
+
 def collect_address_keyboard(coords_id, nearest_pizzeria_id, delivery_allowed, delivery_price):
     keyboard = InlineKeyboardMarkup(row_width=1)
     if delivery_allowed:
         keyboard.add(InlineKeyboardButton('Доставка', callback_data=f'delivery,{coords_id},{delivery_price}'))
         keyboard.add(InlineKeyboardButton('Самовывоз', callback_data=f'pickup,{nearest_pizzeria_id}'))
     return keyboard
+
 
 async def handle_delivery_choose(callback_query: types.CallbackQuery):
     delivery_price = 0
@@ -317,6 +339,7 @@ async def handle_delivery_choose(callback_query: types.CallbackQuery):
                            reply_markup=payment_keyboard)
     return 'WAITING_PAYMENT'
 
+
 async def notify_deliveryman(deliveryman_id, customer_cart_name, delivery_price, lat, lon):
     cart_items = moltin_aps.get_cart_items(customer_cart_name)
     text = f'Заказ от {customer_cart_name}:\n'
@@ -331,15 +354,17 @@ async def notify_deliveryman(deliveryman_id, customer_cart_name, delivery_price,
     await delivery_bot.send_message(deliveryman_id, text)
     await delivery_bot.send_location(deliveryman_id, lat, lon)
 
+
 async def notify_delivery_timeout(user_id):
     await sleep(300)
     # TODO check if order already delivered
     text = dedent('''\
-        Время доставки подошло к концу. Мы вернем вам деньги за ваш заказ. 
+        Время доставки подошло к концу. Мы вернем вам деньги за ваш заказ.
         Приятного аппетита!
     ''')
     await bot.send_message(user_id, text)
     # TODO return money to customer
+
 
 async def handle_payment(callback_query: types.CallbackQuery):
     user_id = callback_query.message.chat.id

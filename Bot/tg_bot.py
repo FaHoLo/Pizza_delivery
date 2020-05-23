@@ -28,7 +28,7 @@ def main():
     logging.basicConfig(
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         handlers=[log_config.SendToTelegramHandler()],
-        # level='DEBUG'
+        level='ERROR',
     )
     executor.start_polling(dp)
 

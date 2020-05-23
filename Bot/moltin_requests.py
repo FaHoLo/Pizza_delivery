@@ -1,7 +1,8 @@
-import os
-import logging
-import requests
 from datetime import datetime
+import logging
+import os
+
+import requests
 
 
 moltin_logger = logging.getLogger('moltin_loger')

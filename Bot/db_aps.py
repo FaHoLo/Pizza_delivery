@@ -1,9 +1,11 @@
-import os
-import redis
 import logging
-import requests
-import moltin_aps
+import os
+
 from geopy.distance import distance
+import redis
+import requests
+
+import moltin_aps
 
 
 _database = None

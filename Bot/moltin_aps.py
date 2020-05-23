@@ -1,8 +1,10 @@
-import os
 import logging
+import os
+
 import requests
-import moltin_requests
 from slugify import slugify
+
+import moltin_requests
 
 
 moltin_logger = logging.getLogger('moltin_loger')

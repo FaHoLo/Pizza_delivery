@@ -1,14 +1,15 @@
-import os
-import db_aps
-import logging
-import log_config
-import moltin_aps
 from asyncio import sleep
+import logging
+import os
 from textwrap import dedent
-from dotenv import load_dotenv
 
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from dotenv import load_dotenv
+
+import db_aps
+import log_config
+import moltin_aps
 
 
 tg_logger = logging.getLogger('tg_logger')

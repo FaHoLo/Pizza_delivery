@@ -65,9 +65,9 @@ async def handle_message(update):
 
 
 async def handle_user_reply(update):
-    db = await db_aps.get_database_connection()
-    chat_id, user_reply = await handle_update(update)
-    user_state = await get_user_state(chat_id, user_reply, db)
+    db = db_aps.get_database_connection()
+    chat_id, user_reply = handle_update(update)
+    user_state = get_user_state(chat_id, user_reply, db)
     states_functions = {
         'START': handle_start,
         'HANDLE_MENU': handle_menu,
@@ -84,7 +84,7 @@ async def handle_user_reply(update):
     tg_logger.debug(f'User «{chat_id}» state changed to {next_state}')
 
 
-async def handle_update(update):
+def handle_update(update):
     if type(update) == types.Message:
         chat_id = f'tg-{update.chat.id}'
         user_reply = update.text
@@ -94,7 +94,7 @@ async def handle_update(update):
     return chat_id, user_reply
 
 
-async def get_user_state(chat_id, user_reply, db):
+def get_user_state(chat_id, user_reply, db):
     if user_reply == '/start':
         user_state = 'START'
     elif user_reply == '/cancel':

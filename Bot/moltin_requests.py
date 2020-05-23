@@ -14,7 +14,6 @@ def make_get_request(method, payload=None):
     headers = collect_authorization_header()
     response = requests.get(f'https://api.moltin.com/v2/{method}', params=payload, headers=headers)
     response.raise_for_status()
-    # TODO Paginaton
     moltin_logger.debug(f'GET request with method {method} was sent to moltin. Response is:\n{response.json()}')
     return response.json()['data']
 

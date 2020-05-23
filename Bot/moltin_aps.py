@@ -167,6 +167,7 @@ def add_product_main_image(product_id, image_id):
 
 def get_all_products():
     method = 'products'
+    # TODO Paginaton
     products = moltin_requests.make_get_request(method)
     moltin_logger.debug('Got all products')
     return products

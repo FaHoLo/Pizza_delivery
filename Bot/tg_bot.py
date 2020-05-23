@@ -59,10 +59,6 @@ async def process_successful_payment(message: types.Message):
     await bot.send_message(message.chat.id, text, parse_mode=types.ParseMode.MARKDOWN_V2)
 
 
-# async def handle_message(update):
-#     await handle_user_reply(update)
-
-
 @dp.message_handler(content_types=types.ContentTypes.ANY)
 async def handle_user_reply(update):
     db = db_aps.get_database_connection()

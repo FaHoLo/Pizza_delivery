@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 import db_aps
 import log_config
 import moltin_aps
+import utils
 
 
 tg_logger = logging.getLogger('tg_logger')
@@ -260,7 +261,7 @@ async def handle_address(message: types.Message):
 
     if message.text:
         apikey = os.environ['GEOCODER_KEY']
-        lat, lon = db_aps.fetch_coordinates(apikey, message.text)
+        lat, lon = utils.fetch_coordinates(apikey, message.text)
     elif message.location:
         lat = message.location.latitude
         lon = message.location.longitude
@@ -281,7 +282,7 @@ async def handle_address(message: types.Message):
 
 
 def get_answer_by_customer_coords(customer_coords):
-    nearest_pizzeria = db_aps.get_nearest_pizzeria(customer_coords)
+    nearest_pizzeria = utils.get_nearest_pizzeria(customer_coords)
     customer_is_close = True
     delivery_price = 0
     if nearest_pizzeria['distance'] <= 0.5:
@@ -325,7 +326,7 @@ async def handle_delivery_choose(callback_query: types.CallbackQuery):
         coords_id, delivery_price = callback_query.data.split(',')[1:3]
         coords = moltin_aps.get_entry('customer-address', coords_id)
         coords = (coords['latitude'], coords['longitude'])
-        pizzeria_id = db_aps.get_nearest_pizzeria(coords)['id']
+        pizzeria_id = utils.get_nearest_pizzeria(coords)['id']
         deliveryman_id = moltin_aps.get_entry('pizzeria', pizzeria_id)['deliveryman-tg-id']
         customer_cart_name = f'tg-{callback_query.message.chat.id}'
         await notify_deliveryman(deliveryman_id, customer_cart_name, delivery_price, coords[0], coords[1])

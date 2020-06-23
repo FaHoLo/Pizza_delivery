@@ -240,6 +240,7 @@ async def handle_cart(callback_query: types.CallbackQuery):
     elif callback_query.data == 'pay':
         text = 'Отправьте нам свой адрес или геолокацию'
         await callback_query.answer(text)
+        await callback_query.message.edit_reply_markup()
         await bot.send_message(callback_query.message.chat.id, text)
         tg_logger.debug('Start payment conversation')
         return 'WAITING_ADDRESS'
@@ -333,6 +334,7 @@ async def handle_delivery_choose(callback_query: types.CallbackQuery):
     payment_keyboard = InlineKeyboardMarkup().add(InlineKeyboardButton('Оплатить', callback_data=f'payment,{delivery_price}'))
     await bot.send_message(callback_query.message.chat.id, text)
     await callback_query.answer(callback_answer)
+    await callback_query.message.edit_reply_markup()
     await bot.send_message(callback_query.message.chat.id, 'Чтобы оплатить заказ, нажмите «Оплатить»',
                            reply_markup=payment_keyboard)
     return 'WAITING_PAYMENT'
@@ -380,6 +382,7 @@ async def handle_payment(callback_query: types.CallbackQuery):
                            payload=f'payment-{user_id}-{date}-{total_price}'
                            )
     await callback_query.answer('Оплатите заказ')
+    await callback_query.message.edit_reply_markup()
     return 'WAITING_ADDRESS'
     # TODO waiting delivery or customer arrival
 

@@ -16,7 +16,7 @@ import utils
 tg_logger = logging.getLogger('tg_logger')
 
 load_dotenv()
-bot = Bot(token=os.environ['TG_BOT_TOKEN'], proxy=os.environ['TG_PROXY'])
+bot = Bot(token=os.environ['TG_BOT_TOKEN'], proxy=os.environ.get('TG_PROXY'))
 delivery_bot = Bot(os.environ['TG_DELIVERY_BOT_TOKEN'])
 dp = Dispatcher(bot)
 

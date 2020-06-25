@@ -1,9 +1,11 @@
+from copy import deepcopy
 import os
 
 from dotenv import load_dotenv
 from flask import Flask, request
 import requests
 
+import fb_templates
 import moltin_aps
 
 
@@ -43,82 +45,19 @@ def webhook():
 
 
 def send_menu(recipient_id):
-    message_payload = {
-        'attachment': {
-            'type': 'template',
-            'payload': {
-                'template_type': 'generic',
-                'image_aspect_ratio': 'square',
-                'elements': []
-            }
-        }
-    }
+    message_payload = deepcopy(fb_templates.GENERIC_TEMPLATE)
 
-    menu_card = {
-        'title': 'Меню',
-        'image_url': 'https://image.freepik.com/free-vector/pizza-logo-design-template_15146-192.jpg',
-        'subtitle': 'Выберите опцию:',
-        'buttons': [
-            {
-                'type': 'postback',
-                'title': 'Корзина',
-                'payload': f'fb-{recipient_id}',
-            },
-            {
-                'type': 'postback',
-                'title': 'Акции',
-                'payload': f'fb-{recipient_id}',
-            },
-            {
-                'type': 'postback',
-                'title': 'Сделать заказ',
-                'payload': f'fb-{recipient_id}',
-            },
-        ]
-    }
+    menu_card = fb_templates.collect_menu_card(recipient_id)
     message_payload['attachment']['payload']['elements'].append(menu_card)
 
     front_page_cat_id = os.environ['FRONT_PAGE_CAT_ID']
     products = moltin_aps.get_products_by_category_id(front_page_cat_id, 'sort=name')
+    product_cards = fb_templates.collect_product_cards(products)
     # Note: facebook can take up to 10 templates in carousel of generic templates
-    for product in products[:8]:
-        title = '{name} | {price}'.format(
-            name=product['name'],
-            price=product['meta']['display_price']['with_tax']['formatted']
-        )
-        image_id = product['relationships']['main_image']['data']['id']
-        image_url = moltin_aps.get_file_info(image_id)['link']['href']
-        message_payload['attachment']['payload']['elements'].append(
-            {
-                'title': title,
-                'image_url': image_url,
-                'subtitle': product['description'],
-                'buttons': [
-                    {
-                        'type': 'postback',
-                        'title': 'Добавить в корзину',
-                        'payload': product['id'],
-                    }
-                ]
-            }
-        )
+    message_payload['attachment']['payload']['elements'].extend(product_cards[:8])
 
-    cats_template = {
-        'title': 'Не нашли нужную пиццу?',
-        'image_url': 'https://primepizza.ru/uploads/position/large_0c07c6fd5c4dcadddaf4a2f1a2c218760b20c396.jpg',
-        'subtitle': 'Остальные пиццы можно найти в одной из категорий:',
-        'buttons': []
-    }
-    categories = moltin_aps.get_all_categories('sort=created_at')
-    for category in categories:
-        if category['name'] == 'Front page':
-            continue
-        cats_template['buttons'].append({
-            'type': 'postback',
-            'title': category['name'],
-            'payload': category['id'],
-        })
-    message_payload['attachment']['payload']['elements'].append(cats_template)
+    categories_card = fb_templates.collect_categories_card()
+    message_payload['attachment']['payload']['elements'].append(categories_card)
 
     send_message(recipient_id, message_payload)
 

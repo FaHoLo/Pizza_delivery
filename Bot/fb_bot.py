@@ -78,8 +78,10 @@ def send_menu(recipient_id):
     }
     message_payload['attachment']['payload']['elements'].append(menu_card)
 
-    products = moltin_aps.get_all_products()
-    for product in products[:5]:
+    front_page_cat_id = os.environ['FRONT_PAGE_CAT_ID']
+    products = moltin_aps.get_products_by_category_id(front_page_cat_id, 'sort=name')
+    # Note: facebook can take up to 10 templates in carousel of generic templates
+    for product in products[:8]:
         title = '{name} | {price}'.format(
             name=product['name'],
             price=product['meta']['display_price']['with_tax']['formatted']
@@ -100,6 +102,23 @@ def send_menu(recipient_id):
                 ]
             }
         )
+
+    cats_template = {
+        'title': 'Не нашли нужную пиццу?',
+        'image_url': 'https://primepizza.ru/uploads/position/large_0c07c6fd5c4dcadddaf4a2f1a2c218760b20c396.jpg',
+        'subtitle': 'Остальные пиццы можно найти в одной из категорий:',
+        'buttons': []
+    }
+    categories = moltin_aps.get_all_categories('sort=created_at')
+    for category in categories:
+        if category['name'] == 'Front page':
+            continue
+        cats_template['buttons'].append({
+            'type': 'postback',
+            'title': category['name'],
+            'payload': category['id'],
+        })
+    message_payload['attachment']['payload']['elements'].append(cats_template)
 
     send_message(recipient_id, message_payload)
 

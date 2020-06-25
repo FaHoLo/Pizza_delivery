@@ -54,6 +54,30 @@ def send_menu(recipient_id):
         }
     }
 
+    menu_card = {
+        'title': 'Меню',
+        'image_url': 'https://image.freepik.com/free-vector/pizza-logo-design-template_15146-192.jpg',
+        'subtitle': 'Выберите опцию:',
+        'buttons': [
+            {
+                'type': 'postback',
+                'title': 'Корзина',
+                'payload': f'fb-{recipient_id}',
+            },
+            {
+                'type': 'postback',
+                'title': 'Акции',
+                'payload': f'fb-{recipient_id}',
+            },
+            {
+                'type': 'postback',
+                'title': 'Сделать заказ',
+                'payload': f'fb-{recipient_id}',
+            },
+        ]
+    }
+    message_payload['attachment']['payload']['elements'].append(menu_card)
+
     products = moltin_aps.get_all_products()
     for product in products[:5]:
         title = '{name} | {price}'.format(

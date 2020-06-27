@@ -1,4 +1,3 @@
-from copy import deepcopy
 import os
 
 from dotenv import load_dotenv
@@ -73,21 +72,7 @@ def handle_start(sender_id, message_text, postback):
 
 
 def send_menu(recipient_id, category_id=None):
-    message_payload = deepcopy(fb_templates.GENERIC_TEMPLATE)
-    if category_id is None:
-        category_id = os.environ['FRONT_PAGE_CAT_ID']
-
-    menu_card = fb_templates.collect_menu_card(recipient_id)
-    message_payload['attachment']['payload']['elements'].append(menu_card)
-
-    products = moltin_aps.get_products_by_category_id(category_id, 'sort=name')
-    product_cards = fb_templates.collect_product_cards(products)
-    # Note: facebook can take up to 10 templates in carousel of generic templates
-    message_payload['attachment']['payload']['elements'].extend(product_cards[:8])
-
-    categories_card = fb_templates.collect_categories_card()
-    message_payload['attachment']['payload']['elements'].append(categories_card)
-
+    message_payload = fb_templates.collect_menu_message(recipient_id, category_id)
     send_message(recipient_id, message_payload)
 
 

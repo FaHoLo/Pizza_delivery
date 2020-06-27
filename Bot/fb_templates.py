@@ -1,3 +1,6 @@
+from copy import deepcopy
+import os
+
 import moltin_aps
 
 
@@ -11,6 +14,25 @@ GENERIC_TEMPLATE = {
         }
     }
 }
+
+
+def collect_menu_message(recipient_id, category_id=None):
+    message_payload = deepcopy(GENERIC_TEMPLATE)
+    if category_id is None:
+        category_id = os.environ['FRONT_PAGE_CAT_ID']
+
+    menu_card = collect_menu_card(recipient_id)
+    products = moltin_aps.get_products_by_category_id(category_id, 'sort=name')
+    product_cards = collect_product_cards(products)
+    categories_card = collect_categories_card()
+
+    # Note: facebook can take up to 10 templates in carousel of generic templates
+    message_payload['attachment']['payload']['elements'].extend([
+        menu_card,
+        product_cards[:8],
+        categories_card,
+    ])
+    return message_payload
 
 
 def collect_menu_card(recipient_id):

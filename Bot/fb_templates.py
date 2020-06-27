@@ -110,7 +110,7 @@ def collect_cart_message(cart_name):
     message = deepcopy(GENERIC_TEMPLATE)
     if not cart_items:
         cart_card['title'] = 'Ваша корзина пуста'
-        cart_card['buttons'] = cart_card['buttons'][-1]
+        cart_card['buttons'] = [cart_card['buttons'][-1]]
         message['attachment']['payload']['elements'].append(cart_card)
     else:
         product_cards = []

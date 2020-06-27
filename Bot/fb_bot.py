@@ -53,6 +53,7 @@ def handle_users_reply(sender_id, message_text, postback=None):
     states_functions = {
         'START': handle_start,
         'MENU': handle_menu,
+        'CART': handle_cart,
     }
     recorded_state = DB.get(f'fb-{sender_id}')
     if not recorded_state or recorded_state.decode('utf-8') not in states_functions.keys():
@@ -97,18 +98,39 @@ def handle_menu(recipient_id, message_text, postback):
     if postback in [category['id'] for category in moltin_aps.get_all_categories()]:
         send_menu(recipient_id, postback)
     elif message_text == 'Добавить в корзину':
-        quantity = 1
-        moltin_aps.add_product_to_cart(f'fb-{recipient_id}', postback, quantity)
-        pizza_name = moltin_aps.get_product_info(postback)['name']
-        message = {'text': f'В корзину добавлена пицца «{pizza_name}»'}
-        send_message(recipient_id, message)
+        add_pizza_to_cart(recipient_id, postback)
     elif message_text == 'Корзина':
         message = fb_templates.collect_cart_message(postback)
         send_message(recipient_id, message)
-        return 'MENU'
+        return 'CART'
     else:
         send_menu(recipient_id)
     return 'MENU'
+
+
+def add_pizza_to_cart(recipient_id, product_id):
+    quantity = 1
+    moltin_aps.add_product_to_cart(f'fb-{recipient_id}', product_id, quantity)
+    pizza_name = moltin_aps.get_product_info(product_id)['name']
+    message = {'text': f'В корзину добавлена пицца «{pizza_name}»'}
+    send_message(recipient_id, message)
+
+
+def handle_cart(recipient_id, message_text, postback):
+    if 'add' in postback:
+        pizza_id = postback.split(':')[-1]
+        add_pizza_to_cart(recipient_id, pizza_id)
+    elif 'remove' in postback:
+        item_id = postback.split(':')[-1]
+        moltin_aps.remove_item_from_cart(f'fb-{recipient_id}', item_id)
+        message = {'text': 'Пицца удалена из корзины'}
+        send_message(recipient_id, message)
+    else:
+        send_menu(recipient_id)
+        return 'MENU'
+    message = fb_templates.collect_cart_message(f'fb-{recipient_id}')
+    send_message(recipient_id, message)
+    return 'CART'
 
 
 if __name__ == '__main__':

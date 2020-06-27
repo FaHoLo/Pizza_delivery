@@ -111,15 +111,5 @@ def handle_menu(recipient_id, message_text, postback):
     return 'MENU'
 
 
-def send_cart(recipient_id, cart_name):
-    cart_items = moltin_aps.get_cart_items(cart_name)
-    if not cart_items:
-        message = {'text': 'Ваша корзина пуста.'}
-    else:
-        message, state = fb_templates.collect_cart_message(cart_name)
-    send_message(recipient_id, message)
-    pass
-
-
 if __name__ == '__main__':
     app.run(debug=True)

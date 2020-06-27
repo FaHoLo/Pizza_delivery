@@ -5,13 +5,16 @@ from dotenv import load_dotenv
 from flask import Flask, request
 import requests
 
+import db_aps
 import fb_templates
 import moltin_aps
 
 
-load_dotenv()
 app = Flask(__name__)
+
+load_dotenv()
 FACEBOOK_TOKEN = os.environ['PAGE_ACCESS_TOKEN']
+DB = db_aps.get_database_connection()
 
 
 @app.route('/', methods=['GET'])
@@ -39,9 +42,30 @@ def webhook():
                 if messaging_event.get('message'):
                     sender_id = messaging_event['sender']['id']
                     # recipient_id = messaging_event['recipient']['id']
-                    # message_text = messaging_event['message']['text']
-                    send_menu(sender_id)
+                    message_text = messaging_event['message']['text']
+                    handle_users_reply(sender_id, message_text)
     return 'ok', 200
+
+
+def handle_users_reply(sender_id, message_text):
+    states_functions = {
+        'START': handle_start,
+    }
+    recorded_state = DB.get(f'fb-{sender_id}')
+    if not recorded_state or recorded_state.decode('utf-8') not in states_functions.keys():
+        user_state = 'START'
+    else:
+        user_state = recorded_state.decode('utf-8')
+    if message_text == '/start':
+        user_state = 'START'
+    state_handler = states_functions[user_state]
+    next_state = state_handler(sender_id, message_text)
+    DB.set(f'fb-{sender_id}', next_state)
+
+
+def handle_start(sender_id, message_text):
+    send_menu(sender_id)
+    return 'START'
 
 
 def send_menu(recipient_id):

@@ -127,12 +127,12 @@ def collect_cart_message(cart_name):
                 {
                     'type': 'postback',
                     'title': 'Добавить ещё одну',
-                    'payload': f'add-{product_id}',
+                    'payload': f'add:{product_id}',
                 },
                 {
                     'type': 'postback',
                     'title': 'Убрать из корзины',
-                    'payload': f'remove-{item_id}',
+                    'payload': f'remove:{item_id}',
                 },
             ]
             product_cards.append({

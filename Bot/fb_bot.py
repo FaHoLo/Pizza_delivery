@@ -96,9 +96,29 @@ def send_message(recipient_id, message_payload):
 def handle_menu(recipient_id, message_text, postback):
     if postback in [category['id'] for category in moltin_aps.get_all_categories()]:
         send_menu(recipient_id, postback)
+    elif message_text == 'Добавить в корзину':
+        quantity = 1
+        moltin_aps.add_product_to_cart(f'fb-{recipient_id}', postback, quantity)
+        pizza_name = moltin_aps.get_product_info(postback)['name']
+        message = {'text': f'В корзину добавлена пицца «{pizza_name}»'}
+        send_message(recipient_id, message)
+    elif message_text == 'Корзина':
+        message = fb_templates.collect_cart_message(postback)
+        send_message(recipient_id, message)
+        return 'MENU'
     else:
         send_menu(recipient_id)
     return 'MENU'
+
+
+def send_cart(recipient_id, cart_name):
+    cart_items = moltin_aps.get_cart_items(cart_name)
+    if not cart_items:
+        message = {'text': 'Ваша корзина пуста.'}
+    else:
+        message, state = fb_templates.collect_cart_message(cart_name)
+    send_message(recipient_id, message)
+    pass
 
 
 if __name__ == '__main__':

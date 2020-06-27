@@ -39,17 +39,21 @@ def webhook():
     if data['object'] == 'page':
         for entry in data['entry']:
             for messaging_event in entry['messaging']:
+                postback = None
+                sender_id = messaging_event['sender']['id']
                 if messaging_event.get('message'):
-                    sender_id = messaging_event['sender']['id']
-                    # recipient_id = messaging_event['recipient']['id']
                     message_text = messaging_event['message']['text']
-                    handle_users_reply(sender_id, message_text)
+                if messaging_event.get('postback'):
+                    message_text = messaging_event['postback']['title']
+                    postback = messaging_event['postback']['payload']
+                handle_users_reply(sender_id, message_text, postback)
     return 'ok', 200
 
 
-def handle_users_reply(sender_id, message_text):
+def handle_users_reply(sender_id, message_text, postback=None):
     states_functions = {
         'START': handle_start,
+        'MENU': handle_menu,
     }
     recorded_state = DB.get(f'fb-{sender_id}')
     if not recorded_state or recorded_state.decode('utf-8') not in states_functions.keys():
@@ -59,23 +63,24 @@ def handle_users_reply(sender_id, message_text):
     if message_text == '/start':
         user_state = 'START'
     state_handler = states_functions[user_state]
-    next_state = state_handler(sender_id, message_text)
+    next_state = state_handler(sender_id, message_text, postback)
     DB.set(f'fb-{sender_id}', next_state)
 
 
-def handle_start(sender_id, message_text):
+def handle_start(sender_id, message_text, postback):
     send_menu(sender_id)
-    return 'START'
+    return 'MENU'
 
 
-def send_menu(recipient_id):
+def send_menu(recipient_id, category_id=None):
     message_payload = deepcopy(fb_templates.GENERIC_TEMPLATE)
+    if category_id is None:
+        category_id = os.environ['FRONT_PAGE_CAT_ID']
 
     menu_card = fb_templates.collect_menu_card(recipient_id)
     message_payload['attachment']['payload']['elements'].append(menu_card)
 
-    front_page_cat_id = os.environ['FRONT_PAGE_CAT_ID']
-    products = moltin_aps.get_products_by_category_id(front_page_cat_id, 'sort=name')
+    products = moltin_aps.get_products_by_category_id(category_id, 'sort=name')
     product_cards = fb_templates.collect_product_cards(products)
     # Note: facebook can take up to 10 templates in carousel of generic templates
     message_payload['attachment']['payload']['elements'].extend(product_cards[:8])
@@ -101,6 +106,14 @@ def send_message(recipient_id, message_payload):
         params=params, headers=headers, json=request_content
     )
     response.raise_for_status()
+
+
+def handle_menu(sender_id, message_text, postback):
+    if postback in [category['id'] for category in moltin_aps.get_all_categories()]:
+        send_menu(sender_id, postback)
+    else:
+        send_menu(sender_id)
+    return 'MENU'
 
 
 if __name__ == '__main__':

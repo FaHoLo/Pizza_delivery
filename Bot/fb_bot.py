@@ -66,8 +66,8 @@ def handle_users_reply(sender_id, message_text, postback=None):
     DB.set(f'fb-{sender_id}', next_state)
 
 
-def handle_start(sender_id, message_text, postback):
-    send_menu(sender_id)
+def handle_start(recipient_id, message_text, postback):
+    send_menu(recipient_id)
     return 'MENU'
 
 
@@ -93,11 +93,11 @@ def send_message(recipient_id, message_payload):
     response.raise_for_status()
 
 
-def handle_menu(sender_id, message_text, postback):
+def handle_menu(recipient_id, message_text, postback):
     if postback in [category['id'] for category in moltin_aps.get_all_categories()]:
-        send_menu(sender_id, postback)
+        send_menu(recipient_id, postback)
     else:
-        send_menu(sender_id)
+        send_menu(recipient_id)
     return 'MENU'
 
 

@@ -33,13 +33,13 @@ def verify():
 @app.route('/', methods=['POST'])
 def webhook():
     '''
-    Основной вебхук, на который будут приходить сообщения от Facebook.
+    Основной вебхук, на который будут приходить сообщения от Facebook и Moltin.
     '''
     if request.headers['User-Agent'] == 'moltin/integrations':
-        if request.headers['X-Moltin-Secret-Key'] != os.environ['VERIFY_TOKEN']:
-            return 'Verification token mismatch', 403
         # webhook on moltin products and categories create/update/delete events
         # TODO handle updates and choose cache action
+        if request.headers['X-Moltin-Secret-Key'] != os.environ['VERIFY_TOKEN']:
+            return 'Verification token mismatch', 403
         fb_cache.update_cached_cards()
     else:
         data = request.get_json()

@@ -36,7 +36,7 @@ def collect_menu_message(recipient_id, category_id=None):
 
 
 def collect_menu_card(recipient_id):
-    menu_card = {
+    return {
         'title': 'Меню',
         'image_url': 'https://image.freepik.com/free-vector/pizza-logo-design-template_15146-192.jpg',
         'subtitle': 'Выберите опцию:',
@@ -58,7 +58,6 @@ def collect_menu_card(recipient_id):
             },
         ]
     }
-    return menu_card
 
 
 def collect_product_cards(products):

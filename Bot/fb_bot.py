@@ -5,6 +5,7 @@ from flask import Flask, request
 import requests
 
 import db_aps
+import fb_cache
 import fb_templates
 import moltin_aps
 
@@ -34,18 +35,25 @@ def webhook():
     '''
     Основной вебхук, на который будут приходить сообщения от Facebook.
     '''
-    data = request.get_json()
-    if data['object'] == 'page':
-        for entry in data['entry']:
-            for messaging_event in entry['messaging']:
-                postback = None
-                sender_id = messaging_event['sender']['id']
-                if messaging_event.get('message'):
-                    message_text = messaging_event['message']['text']
-                if messaging_event.get('postback'):
-                    message_text = messaging_event['postback']['title']
-                    postback = messaging_event['postback']['payload']
-                handle_users_reply(sender_id, message_text, postback)
+    if request.headers['User-Agent'] == 'moltin/integrations':
+        if request.headers['X-Moltin-Secret-Key'] != os.environ['VERIFY_TOKEN']:
+            return 'Verification token mismatch', 403
+        # webhook on moltin products and categories create/update/delete events
+        # TODO handle updates and choose cache action
+        fb_cache.update_cached_cards()
+    else:
+        data = request.get_json()
+        if data['object'] == 'page':
+            for entry in data['entry']:
+                for messaging_event in entry['messaging']:
+                    postback = None
+                    sender_id = messaging_event['sender']['id']
+                    if messaging_event.get('message'):
+                        message_text = messaging_event['message']['text']
+                    if messaging_event.get('postback'):
+                        message_text = messaging_event['postback']['title']
+                        postback = messaging_event['postback']['payload']
+                    handle_users_reply(sender_id, message_text, postback)
     return 'ok', 200
 
 
@@ -133,5 +141,12 @@ def handle_cart(recipient_id, message_text, postback):
     return 'CART'
 
 
+def check_db_for_cards():
+    keys = DB.keys()
+    if b'categories_card' not in keys:
+        fb_cache.update_cached_cards()
+
+
 if __name__ == '__main__':
+    check_db_for_cards()
     app.run(debug=True)

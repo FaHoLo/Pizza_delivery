@@ -29,7 +29,7 @@ def collect_menu_message(recipient_id, category_id=None):
     # Note: facebook can take up to 10 templates in carousel of generic templates
     message_payload['attachment']['payload']['elements'].extend([
         menu_card,
-        *product_cards[:8],
+        *product_cards[:8],  # TODO handle menu with more then 8 items
         categories_card,
     ])
     return message_payload

@@ -1,8 +1,12 @@
 from copy import deepcopy
+import json
 import os
 
+import db_aps
 import moltin_aps
 
+
+DB = db_aps.get_database_connection()
 
 GENERIC_TEMPLATE = {
     'attachment': {
@@ -22,9 +26,8 @@ def collect_menu_message(recipient_id, category_id=None):
         category_id = os.environ['FRONT_PAGE_CAT_ID']
 
     menu_card = collect_menu_card(recipient_id)
-    products = moltin_aps.get_products_by_category_id(category_id, 'sort=name')
-    product_cards = collect_product_cards(products)
-    categories_card = collect_categories_card()
+    product_cards = get_product_cards(category_id)
+    categories_card = get_categories_card()
 
     # Note: facebook can take up to 10 templates in carousel of generic templates
     message_payload['attachment']['payload']['elements'].extend([
@@ -60,6 +63,38 @@ def collect_menu_card(recipient_id):
     }
 
 
+def get_product_cards(category_id):
+    db_key = f'fb_menu:{category_id}'
+    product_cards = DB.get(db_key).decode('UTF-8')
+    product_cards = json.loads(product_cards)
+    return product_cards
+
+
+def get_categories_card():
+    categories_card = DB.get('categories_card').decode('utf-8')
+    categories_card = json.loads(categories_card)
+    return categories_card
+
+
+def collect_categories_card():
+    categories_card = {
+        'title': 'Не нашли подходящую пиццу?',
+        'image_url': 'https://primepizza.ru/uploads/position/large_0c07c6fd5c4dcadddaf4a2f1a2c218760b20c396.jpg',
+        'subtitle': 'Остальные пиццы можно найти в одной из категорий:',
+        'buttons': []
+    }
+    categories = moltin_aps.get_all_categories('sort=created_at')
+    for category in categories:
+        if category['id'] == os.environ['FRONT_PAGE_CAT_ID']:
+            continue
+        categories_card['buttons'].append({
+            'type': 'postback',
+            'title': category['name'],
+            'payload': category['id'],
+        })
+    return categories_card
+
+
 def collect_product_cards(products):
     product_cards = []
     for product in products:
@@ -82,25 +117,6 @@ def collect_product_cards(products):
             ]
         })
     return product_cards
-
-
-def collect_categories_card():
-    categories_card = {
-        'title': 'Не нашли подходящую пиццу?',
-        'image_url': 'https://primepizza.ru/uploads/position/large_0c07c6fd5c4dcadddaf4a2f1a2c218760b20c396.jpg',
-        'subtitle': 'Остальные пиццы можно найти в одной из категорий:',
-        'buttons': []
-    }
-    categories = moltin_aps.get_all_categories('sort=created_at')
-    for category in categories:
-        if category['name'] == 'Front page':
-            continue
-        categories_card['buttons'].append({
-            'type': 'postback',
-            'title': category['name'],
-            'payload': category['id'],
-        })
-    return categories_card
 
 
 def collect_cart_message(cart_name):

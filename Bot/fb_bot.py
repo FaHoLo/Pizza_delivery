@@ -149,4 +149,4 @@ def check_db_for_cards():
 
 if __name__ == '__main__':
     check_db_for_cards()
-    app.run(debug=True)
+    app.run(debug=os.environ['FB_BOT_DEBUG'])

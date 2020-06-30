@@ -18,8 +18,8 @@ def get_all_categories(sort=None):
     return categories
 
 
-def get_products_by_category_id(id, sort=None):
-    method = f'products?filter=eq(category.id,{id})&{sort}'
+def get_products_by_category_id(category_id, sort=None):
+    method = f'products?filter=eq(category.id,{category_id})&{sort}'
     products = moltin_requests.make_get_request(method)
     return products
 

@@ -44,17 +44,16 @@ def webhook():
         return 'ok', 200
 
     data = request.get_json()
-    if data['object'] == 'page':
-        for entry in data['entry']:
-            for messaging_event in entry['messaging']:
-                postback = None
-                sender_id = messaging_event['sender']['id']
-                if messaging_event.get('message'):
-                    message_text = messaging_event['message']['text']
-                if messaging_event.get('postback'):
-                    message_text = messaging_event['postback']['title']
-                    postback = messaging_event['postback']['payload']
-                handle_users_reply(sender_id, message_text, postback)
+    for entry in data['entry']:
+        for messaging_event in entry['messaging']:
+            postback = None
+            sender_id = messaging_event['sender']['id']
+            if messaging_event.get('message'):
+                message_text = messaging_event['message']['text']
+            if messaging_event.get('postback'):
+                message_text = messaging_event['postback']['title']
+                postback = messaging_event['postback']['payload']
+            handle_users_reply(sender_id, message_text, postback)
     return 'ok', 200
 
 

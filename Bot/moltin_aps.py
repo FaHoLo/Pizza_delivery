@@ -12,6 +12,18 @@ moltin_logger = logging.getLogger('moltin_loger')
 APP_JSON_HEADER = {'Content-Type': 'application/json'}
 
 
+def get_all_categories(sort=None):
+    method = f'categories?{sort}'
+    categories = moltin_requests.make_get_request(method)
+    return categories
+
+
+def get_products_by_category_id(category_id, sort=None):
+    method = f'products?filter=eq(category.id,{category_id})&{sort}'
+    products = moltin_requests.make_get_request(method)
+    return products
+
+
 def update_entry(entry_values, flow_slug, entry_id):
     method = f'flows/{flow_slug}/entries/{entry_id}'
     payload = {'data': {'id': entry_id, 'type': 'entry'}}

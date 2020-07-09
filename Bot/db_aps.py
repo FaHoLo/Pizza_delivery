@@ -1,6 +1,7 @@
 import logging
 import os
 
+from dotenv import load_dotenv
 import redis
 
 import moltin_aps
@@ -9,6 +10,8 @@ import moltin_aps
 _database = None
 
 db_logger = logging.getLogger('db_logger')
+
+load_dotenv()
 
 
 def get_database_connection():

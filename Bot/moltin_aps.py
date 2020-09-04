@@ -157,11 +157,12 @@ def create_product(product_info):
 
 def create_file(filepath, public_status):
     method = 'files'
-    files = {
-        'file': (filepath, open(filepath, 'rb')),
-        'public': (None, public_status),
-    }
-    file_info = moltin_requests.make_post_request(method, files=files)['data']
+    with open(filepath, 'rb') as file:
+        files = {
+            'file': (filepath, file),
+            'public': (None, public_status),
+        }
+        file_info = moltin_requests.make_post_request(method, files=files)['data']
     moltin_logger.debug('File created')
     return file_info
 

@@ -143,6 +143,7 @@ async def handle_menu(callback_query: types.CallbackQuery):
     if 'pagination' in callback_query.data:
         page_number = int(callback_query.data.split(',')[1])
         await send_menu(callback_query.message, page_number)
+        await callback_query.answer(f'Страница {page_number+1}')
         await delete_bot_message(callback_query)
         return 'HANDLE_MENU'
 
@@ -222,7 +223,9 @@ async def collect_product_description_keyboard(product_id):
 
 async def handle_description(callback_query: types.CallbackQuery):
     if callback_query.data == 'menu':
-        await send_menu(callback_query.message, 0)
+        page_number = 0
+        await send_menu(callback_query.message, page_number)
+        await callback_query.answer(f'Страница {page_number+1}')
         await delete_bot_message(callback_query)
         return 'HANDLE_MENU'
     elif callback_query.data == 'cart':
@@ -238,7 +241,9 @@ async def handle_description(callback_query: types.CallbackQuery):
 
 async def handle_cart(callback_query: types.CallbackQuery):
     if callback_query.data == 'menu':
-        await send_menu(callback_query.message, 0)
+        page_number = 0
+        await send_menu(callback_query.message, page_number)
+        await callback_query.answer(f'Страница {page_number+1}')
         await delete_bot_message(callback_query)
         return 'HANDLE_MENU'
     elif callback_query.data == 'pay':

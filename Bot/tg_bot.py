@@ -5,6 +5,7 @@ from textwrap import dedent
 
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils.exceptions import MessageCantBeDeleted
 from dotenv import load_dotenv
 
 import db_aps
@@ -198,11 +199,14 @@ async def collect_full_cart(cart_items, cart_name, keyboard):
 
 
 async def delete_bot_message(update):
-    if type(update) == types.Message:
-        await bot.delete_message(update.chat.id, update.message_id)
-    elif type(update) == types.CallbackQuery:
-        await bot.delete_message(update.message.chat.id, update.message.message_id)
-    tg_logger.debug('Previous bot message was deleted')
+    try:
+        if type(update) == types.Message:
+            await bot.delete_message(update.chat.id, update.message_id)
+        elif type(update) == types.CallbackQuery:
+            await bot.delete_message(update.message.chat.id, update.message.message_id)
+        tg_logger.debug('Previous bot message was deleted')
+    except MessageCantBeDeleted:
+        tg_logger.debug('Previous bot message wasn\'t deleted. Too late.')
 
 
 async def collect_product_description_keyboard(product_id):
